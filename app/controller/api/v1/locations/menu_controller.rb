@@ -3,15 +3,17 @@ module Api
     class LocationController < ApplicationController
 
       def menu
-        @all_items = Price.where(
+        @all_items = Product.where(
           location_id: params(:location_id),
           order_type_id: params(:order_type)
         )
+        day_part = DayPart.find(params(:day_part_id))
 
-        day_part = DayPart.find(params(:day_part_id)) || current_day_part(params(:location_id))
-
-        menu_items(nil)
+        result = menu_items(nil)
           .merge(menu_items(day_part))
+          .values
+
+        render json: result
       end
 
       private
@@ -26,15 +28,6 @@ module Api
             hash
           end
       end
-
-      def current_day_part(location_id)
-        hour = (Time.now.wday * 24) + Time.now.hour
-        DayPartSchedule.where(
-          location_id: location_id,
-          hour_of_week: hour
-        ).first
-      end
-
     end
   end
 end
